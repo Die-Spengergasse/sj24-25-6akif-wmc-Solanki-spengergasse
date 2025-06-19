@@ -12,7 +12,7 @@ type Props = {
 }
 
 export default function TopicList({ topics }: Props) {
-    const pathname = usePathname() // liefert z. B. /modules/[moduleGuid]
+    const pathname = usePathname()
 
     if (topics.length === 0) {
         return <p>Keine Themen gefunden.</p>
