@@ -1,3 +1,7 @@
+'use client'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
 type Topic = {
     guid: string
     name: string
@@ -8,6 +12,8 @@ type Props = {
 }
 
 export default function TopicList({ topics }: Props) {
+    const pathname = usePathname() // liefert z. B. /modules/[moduleGuid]
+
     if (topics.length === 0) {
         return <p>Keine Themen gefunden.</p>
     }
@@ -15,8 +21,10 @@ export default function TopicList({ topics }: Props) {
     return (
         <ul>
             {topics.map((topic) => (
-                <li key={topic.guid}>
-                    <strong>{topic.name}</strong><br />
+                <li key={topic.guid} style={{ marginBottom: '1rem' }}>
+                    <Link href={`${pathname}/topics/${topic.guid}`}>
+                        <strong>{topic.name}</strong>
+                    </Link><br />
                     <small style={{ color: 'gray' }}>{topic.guid}</small>
                 </li>
             ))}
