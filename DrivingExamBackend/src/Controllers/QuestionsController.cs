@@ -19,7 +19,7 @@ namespace DrivingExamBackend.Controllers
         public record QuestionDto(
             Guid Guid, int Number, string Text, int Points, string? imageUrl,
             Guid moduleGuid, Guid topicGuid, List<AnswerDto> Answers);
-        public record AnswerDto(Guid Guid, string Text);
+        public record AnswerDto(Guid Guid, string Text, bool IsCorrect);
         public record CheckAnswersCmd(List<CheckAnswerCmd> CheckedAnswers);
         public record CheckAnswerCmd(Guid Guid, bool IsChecked);
         public record CheckAnswersDto(int PointsReachable, int PointsReached, Dictionary<Guid, bool> CheckResult);
@@ -28,6 +28,7 @@ namespace DrivingExamBackend.Controllers
             [Range(1, 99)] int Points, Guid ModuleGuid, Guid TopicGuid, string? ImageUrl,
             List<NewAnswerCmd> Answers);
         public record NewAnswerCmd([StringLength(255, MinimumLength = 1)] string Text, bool IsCorrect);
+
         private readonly DrivingExamContext _db;
 
         public QuestionsController(DrivingExamContext db)
@@ -43,7 +44,8 @@ namespace DrivingExamBackend.Controllers
                 .Where(q => q.Module.Guid == moduleGuid && q.Topic.Guid == topicGuid)
                 .Select(q => new QuestionDto(
                     q.Guid, q.Number, q.Text, q.Points, q.ImageUrl, q.Module.Guid, q.Topic.Guid,
-                    q.Answers.Select(a => new AnswerDto(a.Guid, a.Text)).ToList()))
+                    q.Answers.Select(a => new AnswerDto(a.Guid, a.Text, a.IsCorrect)).ToList()
+                ))
                 .ToListAsync();
             return Ok(questions);
         }

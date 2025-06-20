@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 type Question = {
     guid: string
     number: number
@@ -24,7 +26,7 @@ export default function QuestionList({ questions }: Props) {
                 <li key={q.guid} style={{ marginBottom: '2rem' }}>
                     <strong>Frage {q.number}</strong><br />
                     <p>{q.text}</p>
-                    {q.imageUrl && <img src={q.imageUrl} alt="Fragebild" width={200} />}
+                    {q.imageUrl && <Image src="..." alt="..." width={400} height={300} />}
                     <ul>
                         {q.answers.map((a) => (
                             <li key={a.guid}>{a.text}</li>
