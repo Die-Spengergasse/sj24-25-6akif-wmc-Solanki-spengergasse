@@ -14,11 +14,14 @@ export default function ModuleList({ modules }: Props) {
     return (
         <ul>
             {modules.map((modul) => (
-                <li key={modul.guid} style={{ marginBottom: '1rem' }}>
+                <li key={modul.guid} style={{ marginBottom: '2rem' }}>
+                    <strong>{modul.name}</strong><br />
+                    <small style={{ color: 'gray' }}>{modul.guid}</small><br />
                     <Link href={`/modules/${modul.guid}`}>
-                        <strong>{modul.name}</strong>
-                    </Link><br />
-                    <small style={{ color: 'gray' }}>{modul.guid}</small>
+                        <button style={{ marginTop: '0.5rem', padding: '0.5rem 1rem' }}>
+                            Themen anzeigen
+                        </button>
+                    </Link>
                 </li>
             ))}
         </ul>

@@ -43,6 +43,10 @@ export default function QuestionPage({
 
     const currentQuestion = questions[currentIndex]
 
+    if (!currentQuestion) {
+        return <p>Keine Frage gefunden.</p>
+    }
+
     const handleToggle = (answerGuid: string) => {
         if (checked) return
         setSelectedAnswers((prev) =>

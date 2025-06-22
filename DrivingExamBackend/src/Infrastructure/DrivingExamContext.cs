@@ -98,9 +98,14 @@ namespace TodoBackend.Infrastructure
                     throw new ApplicationException($"Invalid class for Question {number}.");
                 if (!topics.TryGetValue(topic, out var topicEntity))
                 {
-                    topicEntity = new Topic(topic) { Guid = faker.Random.Guid() };
+                    var topicGuid = faker.Random.Guid();
+                    topicEntity = new Topic(topic, moduleEntity.Guid)
+                    {
+                        Guid = topicGuid
+                    };
                     topics.Add(topic, topicEntity);
                 }
+
                 var questionEntity = new Question(
                     number, text, 1, moduleEntity, topicEntity, imageUrl)
                 { Guid = faker.Random.Guid() };

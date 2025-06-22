@@ -1,4 +1,5 @@
 import ModuleList from '@/components/ModuleList'
+import BackButton from '@/components/BackButton'
 
 type Module = {
     guid: string
@@ -11,13 +12,20 @@ export default async function ModulesPage() {
     })
 
     if (!res.ok) {
-        throw new Error('Fehler beim Laden der Module')
+        return (
+            <main style={{ padding: '1rem' }}>
+                <BackButton to="/" />
+                <h2 style={{ color: 'red' }}>⚠️ Fehler beim Laden der Module</h2>
+                <p>Die Module konnten nicht geladen werden. Stelle sicher, dass das Backend läuft.</p>
+            </main>
+        )
     }
 
     const modules: Module[] = await res.json()
 
     return (
         <main style={{ padding: '1rem' }}>
+            <BackButton to="/" />
             <h1>Module</h1>
             <ModuleList modules={modules} />
         </main>

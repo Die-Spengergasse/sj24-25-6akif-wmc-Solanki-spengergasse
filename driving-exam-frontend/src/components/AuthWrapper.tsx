@@ -25,14 +25,14 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
     return (
         <>
-            <div style={{ padding: '1rem', backgroundColor: '#f0f0f0' }}>
+            <div style={{ padding: '1rem', backgroundColor: '#737373' }}>
                 {safeUser ? (
                     <>
                         <span style={{ marginRight: '1rem' }}>👤 {displayName}</span>
-                        <button onClick={logout}>Logout</button>
+                        <button onClick={logout}>🚪🚶 Logout</button>
                     </>
                 ) : (
-                    <button onClick={login}>Login</button>
+                    <button onClick={login}>🔐 Login</button>
                 )}
             </div>
             {children}

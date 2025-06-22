@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using TodoBackend.Infrastructure;
 
@@ -17,8 +16,9 @@ namespace DrivingExamBackend.Controllers
     public class QuestionsController : ControllerBase
     {
         public record QuestionDto(
-            Guid Guid, int Number, string Text, int Points, string? imageUrl,
-            Guid moduleGuid, Guid topicGuid, List<AnswerDto> Answers);
+            Guid Guid, int Number, string Text, int Points, string? ImageUrl,
+            Guid ModuleGuid, Guid TopicGuid, List<AnswerDto> Answers);
+
         public record AnswerDto(Guid Guid, string Text, bool IsCorrect);
         public record CheckAnswersCmd(List<CheckAnswerCmd> CheckedAnswers);
         public record CheckAnswerCmd(Guid Guid, bool IsChecked);
@@ -42,12 +42,52 @@ namespace DrivingExamBackend.Controllers
         {
             var questions = await _db.Questions
                 .Where(q => q.Module.Guid == moduleGuid && q.Topic.Guid == topicGuid)
+                .Include(q => q.Answers)
+                .Include(q => q.Module)
+                .Include(q => q.Topic)
+                .ToListAsync();
+
+            var result = questions.Select(q => new QuestionDto(
+                q.Guid,
+                q.Number,
+                q.Text,
+                q.Points,
+                q.ImageUrl,
+                q.Module.Guid,
+                q.Topic.Guid,
+                q.Answers.Select(a => new AnswerDto(a.Guid, a.Text, a.IsCorrect)).ToList()
+            )).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("exam/{moduleGuid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<QuestionDto>>> GetRandomExamQuestions(Guid moduleGuid, [FromQuery] int count = 20)
+        {
+            var questions = await _db.Questions
+                .Where(q => q.Module.Guid == moduleGuid)
+                .Include(q => q.Answers)
+                .Include(q => q.Module)
+                .Include(q => q.Topic)
+                .ToListAsync();
+
+            var selectedQuestions = questions
+                .OrderBy(q => Guid.NewGuid())
+                .Take(count)
                 .Select(q => new QuestionDto(
-                    q.Guid, q.Number, q.Text, q.Points, q.ImageUrl, q.Module.Guid, q.Topic.Guid,
+                    q.Guid,
+                    q.Number,
+                    q.Text,
+                    q.Points,
+                    q.ImageUrl,
+                    q.Module.Guid,
+                    q.Topic.Guid,
                     q.Answers.Select(a => new AnswerDto(a.Guid, a.Text, a.IsCorrect)).ToList()
                 ))
-                .ToListAsync();
-            return Ok(questions);
+                .ToList();
+
+            return Ok(selectedQuestions);
         }
 
         [HttpPost("{guid}/checkanswers")]
@@ -59,13 +99,13 @@ namespace DrivingExamBackend.Controllers
             var questionWithAnswers = await _db.Questions
                 .Include(q => q.Answers)
                 .FirstOrDefaultAsync(q => q.Guid == guid);
-            if (questionWithAnswers is null) return Problem("Question not found", statusCode: 404);
+            if (questionWithAnswers is null) return NotFound("Question not found");
 
-            var answers = questionWithAnswers.Answers.ToDictionary(a => a.Guid, a => a.IsCorrect);
+            var answers = questionWithAnswers.Answers?.ToDictionary(a => a.Guid, a => a.IsCorrect) ?? new Dictionary<Guid, bool>();
             if (answers.Count != cmd.CheckedAnswers.Select(c => c.Guid).Distinct().Count())
-                return Problem("Number of answers does not match number of answers in question.", statusCode: 400);
+                return BadRequest("Number of answers does not match number of answers in question.");
             if (cmd.CheckedAnswers.Any(a => !answers.ContainsKey(a.Guid)))
-                return Problem("Invalid answer GUIDs for question.", statusCode: 400);
+                return BadRequest("Invalid answer GUIDs for question.");
 
             var checkDict = cmd.CheckedAnswers
                 .Select(c => new

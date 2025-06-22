@@ -13,7 +13,6 @@ export default function HomePage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '300px' }}>
         <button onClick={() => router.push('/modules')}>📚 Module anzeigen</button>
         <button onClick={() => router.push('/modules/new')}>➕ Modul anlegen</button>
-        <button onClick={() => router.push('/topics/new')}>➕ Thema anlegen</button>
         <button onClick={() => router.push('/exam/results')}>📋 Meine Prüfungen anzeigen</button>
       </div>
     </main>

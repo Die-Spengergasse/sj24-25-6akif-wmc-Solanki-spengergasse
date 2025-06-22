@@ -16,7 +16,11 @@ namespace DrivingExamBackend.Controllers
     public class TopicsController : ControllerBase
     {
         public record TopicDto(Guid Guid, string Name, int QuestionCount);
-        public record NewTopicDto([StringLength(255, MinimumLength = 1)] string Name);
+        public record NewTopicDto(
+            [StringLength(255, MinimumLength = 1)] string Name,
+            Guid AssignedModuleGuid
+        );
+
         public record EditTopicDto(Guid Guid, [StringLength(255, MinimumLength = 1)] string Name);
         private readonly DrivingExamContext _db;
 
@@ -29,25 +33,25 @@ namespace DrivingExamBackend.Controllers
         [ProducesResponseType<List<TopicDto>>(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<TopicDto>>> GetTopics([FromQuery] Guid? assignedModule)
         {
-            var topicsSet = _db.Questions
-                .Where(q => !assignedModule.HasValue || q.Module.Guid == assignedModule.Value)
-                .Select(q => q.Topic.Guid)
-                .ToHashSet();
-
             var topics = await _db.Topics
-                .Where(t => topicsSet.Contains(t.Guid))
+                .Where(t => !assignedModule.HasValue || t.AssignedModuleGuid == assignedModule.Value)
                 .Select(t => new TopicDto(
-                    t.Guid, t.Name, t.Questions.Count()))
+                    t.Guid,
+                    t.Name,
+                    t.Questions.Count(q => !assignedModule.HasValue || q.Module.Guid == assignedModule.Value)
+                ))
                 .ToListAsync();
+
             return Ok(topics);
         }
+
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateTopic([FromBody] NewTopicDto cmd)
         {
-            var topic = new Topic(cmd.Name);
+            var topic = new Topic(cmd.Name, cmd.AssignedModuleGuid);
             _db.Topics.Add(topic);
             try
             {

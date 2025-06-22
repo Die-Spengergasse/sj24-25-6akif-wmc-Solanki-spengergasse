@@ -9,11 +9,15 @@ namespace DrivingExamBackend.Models
     [Index(nameof(Name), IsUnique = true)]
     public class Topic : Entity<int>
     {
-        public Topic(string name)
+        public Topic(string name, Guid assignedModuleGuid)
         {
             Name = name;
+            AssignedModuleGuid = assignedModuleGuid;
         }
+
         public string Name { get; set; }
+        public Guid AssignedModuleGuid { get; set; }
+
         public List<Question> Questions { get; } = new();
     }
 
